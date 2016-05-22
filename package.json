@@ -1,0 +1,28 @@
+{
+  "name": "urge",
+  "version": "1.0.0",
+  "description": "A package manager for the demi language",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oakfang/urge.git"
+  },
+  "author": "Alon Niv",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/oakfang/urge/issues"
+  },
+  "bin": {
+    "urge": "./bin/urge.js"
+  },
+  "homepage": "https://github.com/oakfang/urge#readme",
+  "dependencies": {
+    "argparse": "^1.0.7",
+    "git-clone": "^0.1.0",
+    "mkdirp": "^0.5.1",
+    "request": "^2.72.0"
+  }
+}
