@@ -10,13 +10,32 @@ const parser = new ArgumentParser({
 });
 
 parser.addArgument(['-i', '--install'], {
-    help: 'Name of package to install'
+    help: 'Name of demiurge to install'
+});
+
+parser.addArgument(['-s', '--save'], {
+    help: 'Save installed demiurge to urge.json',
+    action: 'storeTrue'
+});
+
+parser.addArgument(['-n', '--init'], {
+    help: 'Start a new demiurge'
+});
+
+parser.addArgument(['-f', '--fetch'], {
+    help: 'Fetch all dependecies in urge.json',
+    action: 'storeTrue'
 });
 
 const args = parser.parseArgs();
 
-if (!args.install) throw new Error('Please provide a valid package name (user/package)');
-
-const [user, repo] = args.install.trim().split('/');
-
-urge(user, repo).then(() => console.log('Done'));
+if (args.init) {
+    urge.init(args.init);
+} else if (args.install) {
+    const [user, repo] = args.install.trim().split('/');
+    urge.install(user, repo, args.save);
+} else if (args.fetch) {
+    urge.fetch();
+} else {
+    throw new Error('No action provided');
+}
