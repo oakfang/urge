@@ -31,38 +31,52 @@ const writePkg = pkg => new Promise((resolve, reject) => {
     fs.writeFile(URGE_CONF, JSON.stringify(pkg, null, 2), err => err ? reject(err) : resolve());
 });
 
-const clonePromise = (user, repo, target) => 
+const clonePromise = (user, repo, checkout, target) => 
     new Promise((resolve, reject) => 
-        clone(`https://github.com/${user}/${repo}.git`, target, err => err ? reject(err) : resolve()));
+        clone(`https://github.com/${user}/${repo}.git`, target, {checkout}, 
+            err => err ? reject(err) : resolve()));
 
 const mkdirpPromise = path => new Promise((resolve, reject) => mkdirp(path, err => err ? reject(err) : resolve(path)));
 
-const uninstall = name => new Promise(resolve => rimraf(`./urges/${name}`, resolve));
+const uninstall = (name, save=false) => {
+    if (!save) return new Promise(resolve => rimraf(`./urges/${name}`, resolve));
+    return readPkg().then(pkg => {
+        delete pkg.deps[name];
+        return writePkg(pkg);
+    }).then(() => uninstall(name));
+};
 
-function install(user, repo, save=false) {
+function install(user, repo, version="master", save=false) {
+    let urgeName;
     return getPackageDetails(user, repo).then(({name, deps}) => {
+        urgeName = name;
         const dir = `./urges/${name}`;
-        const subDeps = deps || [];
-        return Promise.all(subDeps.map(dep => {
-            let [user, repo] = dep.split('/');
+        const subDeps = deps || {};
+        return Promise.all(Object.keys(subDeps).map(urge => {
+            let {user, repo, version} = subDeps[urge];
             return install(user, repo);
         }))
         .then(() => uninstall(name))
         .then(() => mkdirpPromise(dir));
     }).then(path => {
-        return clonePromise(user, repo, path);
+        return clonePromise(user, repo, version, path);
     }).then(() => save ? readPkg().then(pkg => {
-        pkg.deps = (pkg.deps || []).concat([`${user}/${repo}`]);
+        pkg.deps = pkg.deps || {};
+        pkg.deps[urgeName] = {
+            user,
+            repo,
+            version
+        };
         return writePkg(pkg);
     }) : null);
 }
 
 function init(name) {
-    return writePkg({name, deps: []});
+    return writePkg({name, deps: {}});
 }
 
 function fetch() {
-    return readPkg().then(({deps}) => deps || []);
+    return readPkg().then(({deps}) => deps || {});
 }
 
 module.exports = {install, init, fetch, uninstall};

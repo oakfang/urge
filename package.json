@@ -1,6 +1,6 @@
 {
   "name": "urge",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A package manager for the demi language",
   "main": "index.js",
   "scripts": {
